@@ -16,6 +16,8 @@ sim <- function(n = 25, tmax = 25, M = 1000, cp = 0.95, proximal = TRUE,
   lag.prefix <- c("lag", "")[proximal + 1]
   ## omit these terms from treatment (main) effect, regardless of the truth
   o <- paste0(lag.prefix, "vary")
+  ## keep these terms from the main effect, regardless of the truth
+  k <- ""
   truth <- if (proximal) params(at$beta0, omit = o)
            else params(at$beta1, omit = o)
   ## lists of quoted variables names for cbind, via do.call
@@ -29,8 +31,6 @@ sim <- function(n = 25, tmax = 25, M = 1000, cp = 0.95, proximal = TRUE,
     o <- ""
   else if (scenario == "ar1")
     k <- c("one", "lagy")
-  else
-    k <- ""
   hm <- if (proximal) with(at, params(c(mu, xi0), keep = k))
         else with(at, params(c(mu, xi1)))
   hm <- hmc <- unique(c(qnames(c(truth, hm), keep = k, omit = o)))

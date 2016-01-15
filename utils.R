@@ -5,7 +5,8 @@ library("zoo")
 source("xgeepack.R")
 source("xzoo.R")
 system("R CMD SHLIB rsnmm.c")
-dyn.load("rsnmm.so")
+dso <- if (Sys.info()["sysname"] == "Windows") "rsnmm.dll" else "rsnmm.so"
+dyn.load(dso)
 source("rsnmm.R")
 
 standardize <- function(x, na.rm = FALSE, scale = TRUE)
