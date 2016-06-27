@@ -62,13 +62,14 @@ estfun.geeglm <- function(x, wcovinv = NULL, small = FALSE, ...)
   T <- length(x$y) / n
   ## apply Mancl and DeRouen's (2001) small sample correction
   lev <- if (small) leverage(x, wcovinv)
-         else lapply(1:n, function(i) rep(0, T))
-  psi <- mapply(function(D, w, V, r, h) t(D) %*% diag(w) %*% V %*% (r / (1 - h)),
+         else lapply(1:n, function(i) matrix(0, T, T))
+  psi <- mapply(function(D, w, V, r, H)
+                t(D) %*% diag(w) %*% V %*% (solve(diag(1, T) - H) %*% r),
                 D = split.data.frame(x$geese$X * mu.etahat(x), x$geese$id),
                 w = split(as.vector(x$weights), x$geese$id),
                 V = wcovinv,
                 r = split(x$y - x$fitted.values, x$geese$id),
-                h = lev,
+                H = lev,
                 SIMPLIFY = FALSE)
   do.call("rbind", lapply(psi, t))
 }
@@ -77,7 +78,7 @@ leverage <- function(x, wcovinv = NULL)
 {
   if (is.null(wcovinv)) wcovinv <- working.covariance(x, invert = TRUE)
   b <- bread.geeglm(x, wcovinv)
-  mapply(function(D, w, V) diag(D %*% b %*% t(D) %*% diag(w) %*% V),
+  mapply(function(D, w, V) D %*% b %*% t(D) %*% diag(w) %*% V,
          D = split.data.frame(x$geese$X * mu.etahat(x), x$geese$id),
          w = split(as.vector(x$weights), x$geese$id),
          V = wcovinv,
