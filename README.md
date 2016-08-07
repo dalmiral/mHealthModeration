@@ -10,15 +10,15 @@ The method is straightforward to implement, using over-the-counter weighted leas
 
 Three files are included:
 
-#1. weighting-and-centering-estimator-known-randomization-probs.R
+###1. weighting-and-centering-estimator-known-randomization-probs.R
 
 This code implements the method for settings where the numerator treatment probabilities are estimated, but the denominator treatment probabilities are known.  This implementation is most likely to be used with data arising from a micro-randomized trial, where the randomizations probabilities are known.
 
-#2. weighting-and-centering-estimator-estimated-randomization-probs.R
+###2. weighting-and-centering-estimator-estimated-randomization-probs.R
 
 This code implements the method for settings where both the numerator and denominator treatment probabilities are estimated.  This implementation is most likely to be used with observational study data or any data where the denominator probabilities are not known.
 
-#3. fakeMRTdata.txt
+###3. fakeMRTdata.txt
 
 This file contains data from a simulated micro-randomized trial. This file can be used to test run the code above.
 
