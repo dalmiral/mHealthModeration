@@ -1,0 +1,1268 @@
+
+R version 3.3.1 (2016-06-21) -- "Bug in Your Hair"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library("foreach")
+> library("doParallel")
+Loading required package: iterators
+Loading required package: parallel
+> library("parallel")
+> source("init.R")
+
+Attaching package: ‘zoo’
+
+The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+make: Nothing to be done for `all'.
+> source("sim.R")
+> 
+> ## set number of Monte Carlo replicates
+> M <- 1000
+> 
+> ## set number of threads to use for parallel processing and the random seed
+> ## (nb: these two values ensure that the results are replicable)
+> cores <- 4
+> seed <- 0
+> 
+> cl <- makeCluster(getOption("cl.cores", cores))
+> clusterEvalQ(cl, source("init.R"))
+make: Nothing to be done for `all'.
+make: Nothing to be done for `all'.
+make: Nothing to be done for `all'.
+make: Nothing to be done for `all'.
+[[1]]
+[[1]]$value
+[[1]]$value$value
+function (origin = 1, sd = 1, coralpha = sqrt(0.5), corstr = c("ar1", 
+    "exchangeable"), beta0 = c(-0.2, 0, 0, 0.2, 0), beta1 = rep(0, 
+    4), eta = c(0, 0, 0.8, -0.8, 0), mu = rep(0, 3), theta0 = c(0, 
+    0.8), theta1 = c(0, 0), coef.avail = c(100, rep(0, 3)), coef.state = rep(0, 
+    5), tfun = NULL, lag = 3 + any(beta1 != 0)) 
+{
+    corstr <- match.arg(corstr)
+    if (is.null(tfun)) 
+        tfun <- rep(list(function(tcur, tmax) rep(0, length(tcur))), 
+            4)
+    list(origin = 1, lag = lag, sd = sd, coralpha = coralpha, 
+        corstr = corstr, beta0 = setNames(beta0, c("one", "tmod", 
+            "base", "state", "lag1a")), beta1 = setNames(beta1, 
+            c("one", "lag1tmod", "base", "lag1state")), eta = setNames(eta, 
+            c("one", "base", "state", "lag1a", "lag1y")), mu = setNames(mu, 
+            c("one", "ty", "base")), theta0 = setNames(theta0, 
+            c("avail", "state")), theta1 = setNames(theta1, c("lag1avail", 
+            "lag1state")), coef.avail = setNames(coef.avail, 
+            c("one", "tavail", "lag1a", "lag1y")), coef.state = setNames(coef.state, 
+            c("one", "tstate", "base", "lag1state", "lag1a")), 
+        tfun = setNames(tfun, c("ty", "tmod", "tavail", "tstate")))
+}
+
+[[1]]$value$visible
+[1] FALSE
+
+
+[[1]]$visible
+[1] FALSE
+
+
+[[2]]
+[[2]]$value
+[[2]]$value$value
+function (origin = 1, sd = 1, coralpha = sqrt(0.5), corstr = c("ar1", 
+    "exchangeable"), beta0 = c(-0.2, 0, 0, 0.2, 0), beta1 = rep(0, 
+    4), eta = c(0, 0, 0.8, -0.8, 0), mu = rep(0, 3), theta0 = c(0, 
+    0.8), theta1 = c(0, 0), coef.avail = c(100, rep(0, 3)), coef.state = rep(0, 
+    5), tfun = NULL, lag = 3 + any(beta1 != 0)) 
+{
+    corstr <- match.arg(corstr)
+    if (is.null(tfun)) 
+        tfun <- rep(list(function(tcur, tmax) rep(0, length(tcur))), 
+            4)
+    list(origin = 1, lag = lag, sd = sd, coralpha = coralpha, 
+        corstr = corstr, beta0 = setNames(beta0, c("one", "tmod", 
+            "base", "state", "lag1a")), beta1 = setNames(beta1, 
+            c("one", "lag1tmod", "base", "lag1state")), eta = setNames(eta, 
+            c("one", "base", "state", "lag1a", "lag1y")), mu = setNames(mu, 
+            c("one", "ty", "base")), theta0 = setNames(theta0, 
+            c("avail", "state")), theta1 = setNames(theta1, c("lag1avail", 
+            "lag1state")), coef.avail = setNames(coef.avail, 
+            c("one", "tavail", "lag1a", "lag1y")), coef.state = setNames(coef.state, 
+            c("one", "tstate", "base", "lag1state", "lag1a")), 
+        tfun = setNames(tfun, c("ty", "tmod", "tavail", "tstate")))
+}
+
+[[2]]$value$visible
+[1] FALSE
+
+
+[[2]]$visible
+[1] FALSE
+
+
+[[3]]
+[[3]]$value
+[[3]]$value$value
+function (origin = 1, sd = 1, coralpha = sqrt(0.5), corstr = c("ar1", 
+    "exchangeable"), beta0 = c(-0.2, 0, 0, 0.2, 0), beta1 = rep(0, 
+    4), eta = c(0, 0, 0.8, -0.8, 0), mu = rep(0, 3), theta0 = c(0, 
+    0.8), theta1 = c(0, 0), coef.avail = c(100, rep(0, 3)), coef.state = rep(0, 
+    5), tfun = NULL, lag = 3 + any(beta1 != 0)) 
+{
+    corstr <- match.arg(corstr)
+    if (is.null(tfun)) 
+        tfun <- rep(list(function(tcur, tmax) rep(0, length(tcur))), 
+            4)
+    list(origin = 1, lag = lag, sd = sd, coralpha = coralpha, 
+        corstr = corstr, beta0 = setNames(beta0, c("one", "tmod", 
+            "base", "state", "lag1a")), beta1 = setNames(beta1, 
+            c("one", "lag1tmod", "base", "lag1state")), eta = setNames(eta, 
+            c("one", "base", "state", "lag1a", "lag1y")), mu = setNames(mu, 
+            c("one", "ty", "base")), theta0 = setNames(theta0, 
+            c("avail", "state")), theta1 = setNames(theta1, c("lag1avail", 
+            "lag1state")), coef.avail = setNames(coef.avail, 
+            c("one", "tavail", "lag1a", "lag1y")), coef.state = setNames(coef.state, 
+            c("one", "tstate", "base", "lag1state", "lag1a")), 
+        tfun = setNames(tfun, c("ty", "tmod", "tavail", "tstate")))
+}
+
+[[3]]$value$visible
+[1] FALSE
+
+
+[[3]]$visible
+[1] FALSE
+
+
+[[4]]
+[[4]]$value
+[[4]]$value$value
+function (origin = 1, sd = 1, coralpha = sqrt(0.5), corstr = c("ar1", 
+    "exchangeable"), beta0 = c(-0.2, 0, 0, 0.2, 0), beta1 = rep(0, 
+    4), eta = c(0, 0, 0.8, -0.8, 0), mu = rep(0, 3), theta0 = c(0, 
+    0.8), theta1 = c(0, 0), coef.avail = c(100, rep(0, 3)), coef.state = rep(0, 
+    5), tfun = NULL, lag = 3 + any(beta1 != 0)) 
+{
+    corstr <- match.arg(corstr)
+    if (is.null(tfun)) 
+        tfun <- rep(list(function(tcur, tmax) rep(0, length(tcur))), 
+            4)
+    list(origin = 1, lag = lag, sd = sd, coralpha = coralpha, 
+        corstr = corstr, beta0 = setNames(beta0, c("one", "tmod", 
+            "base", "state", "lag1a")), beta1 = setNames(beta1, 
+            c("one", "lag1tmod", "base", "lag1state")), eta = setNames(eta, 
+            c("one", "base", "state", "lag1a", "lag1y")), mu = setNames(mu, 
+            c("one", "ty", "base")), theta0 = setNames(theta0, 
+            c("avail", "state")), theta1 = setNames(theta1, c("lag1avail", 
+            "lag1state")), coef.avail = setNames(coef.avail, 
+            c("one", "tavail", "lag1a", "lag1y")), coef.state = setNames(coef.state, 
+            c("one", "tstate", "base", "lag1state", "lag1a")), 
+        tfun = setNames(tfun, c("ty", "tmod", "tavail", "tstate")))
+}
+
+[[4]]$value$visible
+[1] FALSE
+
+
+[[4]]$visible
+[1] FALSE
+
+
+> registerDoParallel(cl)
+> 
+> sim.omit <- function() {
++   out <- NULL
++   ## low, medium and high degrees of moderation by state
++   for (b in c(0.2, 0.5, 0.8)) {
++     for (n in c(30, 60)) {
++       for (tmax in c(30, 50)) {
++         clusterSetRNGStream(cl, seed)
++         out <-
++           rbind(out,
++                 cbind(level = paste("$\\beta_{11}^* = ", b, "$", sep = ""),
++                       sim(n, tmax, M,
++                           ## regress response on state and proximal treatment,
++                           ## ignoring the underlying interaction between the two
++                           y.formula = list(w = y ~ state + I(a - pn),
++                                            u.ind = y ~ state + a,
++                                            u.ar1 = y ~ state + a,
++                                            u.exch = y ~ state + a),
++                           y.names = c(w = "Weighted and centered",
++                                       u.ind = "GEE independence",
++                                       u.ar1 = "GEE AR(1)",
++                                       u.exch = "GEE exchangeable"),
++                           ## term labels for proximal treatment
++                           y.label = list(w = "I(a - pn)",
++                                          u.ind = "a", u.ar1 = "a", u.exch = "a"),
++                           ## specify weights and working correlation structure
++                           y.args = list(w = list(wn = "pn", wd = "prob"),
++                                         u.ind = list(),
++                                         u.ar1 = list(corstr = "ar1"),
++                                         u.exch = list(corstr = "exch")),
++                           ## specify weight numerator model
++                           a.formula = list(pn = a ~ 1),
++                           a.names = c(pn = "Intercept-only"),
++                           ## use default generative model, but with the specified
++                           ## level of moderation by the time-varying state
++                           beta0 = c(-0.2, 0, 0, b, 0))))
++       }
++     }
++   }
++   out
++ }
+> 
+> omit <- sim.omit()
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.2   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x1cc9c10>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x1cc9c10>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x1cc9c10>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x1cc9c10>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.2   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x282e9f0>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x282e9f0>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x282e9f0>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x282e9f0>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.2   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2d94928>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2d94928>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2d94928>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2d94928>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.2   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x3bc4c08>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x3bc4c08>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x3bc4c08>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x3bc4c08>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.5   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x25b3050>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x25b3050>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x25b3050>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x25b3050>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.5   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x32b0118>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x32b0118>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x32b0118>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x32b0118>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.5   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x40568d8>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x40568d8>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x40568d8>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x40568d8>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.5   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x3648430>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x3648430>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x3648430>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x3648430>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.8   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x38f5e60>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x38f5e60>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x38f5e60>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x38f5e60>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.8   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2477cb0>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2477cb0>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2477cb0>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2477cb0>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.8   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x310ab10>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x310ab10>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x310ab10>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x310ab10>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 3
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.8   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+        0         0         0         0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2954de8>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2954de8>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2954de8>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2954de8>
+
+
+Analysis models
+
+  Weighted and centered: y ~ state + I(a - pn)
+
+  GEE independence: y ~ state + a
+
+  GEE AR(1): y ~ state + a
+
+  GEE exchangeable: y ~ state + a
+
+Treatment probability models
+
+  Intercept-only: a ~ 1
+
+> save(omit, file = "sim-omit.RData")
+> 
+> stopCluster(cl)
+> 
+> proc.time()
+    user   system  elapsed 
+  11.376    0.617 8169.800 

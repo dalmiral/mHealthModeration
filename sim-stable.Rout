@@ -1,0 +1,497 @@
+
+R version 3.3.1 (2016-06-21) -- "Bug in Your Hair"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library("foreach")
+> library("doParallel")
+Loading required package: iterators
+Loading required package: parallel
+> library("parallel")
+> source("init.R")
+
+Attaching package: ‘zoo’
+
+The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+make: Nothing to be done for `all'.
+> source("sim.R")
+> 
+> ## set number of Monte Carlo replicates
+> M <- 1000
+> 
+> ## set number of threads to use for parallel processing and the random seed
+> ## nb: these two values ensure that the results are replicable
+> cores <- 2
+> seed <- 0
+> 
+> cl <- makeCluster(getOption("cl.cores", cores))
+> clusterEvalQ(cl, source("init.R"))
+make: Nothing to be done for `all'.
+make: Nothing to be done for `all'.
+[[1]]
+[[1]]$value
+[[1]]$value$value
+function (origin = 1, sd = 1, coralpha = sqrt(0.5), corstr = c("ar1", 
+    "exchangeable"), beta0 = c(-0.2, 0, 0, 0.2, 0), beta1 = rep(0, 
+    4), eta = c(0, 0, 0.8, -0.8, 0), mu = rep(0, 3), theta0 = c(0, 
+    0.8), theta1 = c(0, 0), coef.avail = c(100, rep(0, 3)), coef.state = rep(0, 
+    5), tfun = NULL, lag = 3 + any(beta1 != 0)) 
+{
+    corstr <- match.arg(corstr)
+    if (is.null(tfun)) 
+        tfun <- rep(list(function(tcur, tmax) rep(0, length(tcur))), 
+            4)
+    list(origin = 1, lag = lag, sd = sd, coralpha = coralpha, 
+        corstr = corstr, beta0 = setNames(beta0, c("one", "tmod", 
+            "base", "state", "lag1a")), beta1 = setNames(beta1, 
+            c("one", "lag1tmod", "base", "lag1state")), eta = setNames(eta, 
+            c("one", "base", "state", "lag1a", "lag1y")), mu = setNames(mu, 
+            c("one", "ty", "base")), theta0 = setNames(theta0, 
+            c("avail", "state")), theta1 = setNames(theta1, c("lag1avail", 
+            "lag1state")), coef.avail = setNames(coef.avail, 
+            c("one", "tavail", "lag1a", "lag1y")), coef.state = setNames(coef.state, 
+            c("one", "tstate", "base", "lag1state", "lag1a")), 
+        tfun = setNames(tfun, c("ty", "tmod", "tavail", "tstate")))
+}
+
+[[1]]$value$visible
+[1] FALSE
+
+
+[[1]]$visible
+[1] FALSE
+
+
+[[2]]
+[[2]]$value
+[[2]]$value$value
+function (origin = 1, sd = 1, coralpha = sqrt(0.5), corstr = c("ar1", 
+    "exchangeable"), beta0 = c(-0.2, 0, 0, 0.2, 0), beta1 = rep(0, 
+    4), eta = c(0, 0, 0.8, -0.8, 0), mu = rep(0, 3), theta0 = c(0, 
+    0.8), theta1 = c(0, 0), coef.avail = c(100, rep(0, 3)), coef.state = rep(0, 
+    5), tfun = NULL, lag = 3 + any(beta1 != 0)) 
+{
+    corstr <- match.arg(corstr)
+    if (is.null(tfun)) 
+        tfun <- rep(list(function(tcur, tmax) rep(0, length(tcur))), 
+            4)
+    list(origin = 1, lag = lag, sd = sd, coralpha = coralpha, 
+        corstr = corstr, beta0 = setNames(beta0, c("one", "tmod", 
+            "base", "state", "lag1a")), beta1 = setNames(beta1, 
+            c("one", "lag1tmod", "base", "lag1state")), eta = setNames(eta, 
+            c("one", "base", "state", "lag1a", "lag1y")), mu = setNames(mu, 
+            c("one", "ty", "base")), theta0 = setNames(theta0, 
+            c("avail", "state")), theta1 = setNames(theta1, c("lag1avail", 
+            "lag1state")), coef.avail = setNames(coef.avail, 
+            c("one", "tavail", "lag1a", "lag1y")), coef.state = setNames(coef.state, 
+            c("one", "tstate", "base", "lag1state", "lag1a")), 
+        tfun = setNames(tfun, c("ty", "tmod", "tavail", "tstate")))
+}
+
+[[2]]$value$visible
+[1] FALSE
+
+
+[[2]]$visible
+[1] FALSE
+
+
+> registerDoParallel(cl)
+> 
+> sim.stable <- function() {
++   out <- NULL
++   for (n in c(30,60)) {
++     for (tmax in c(30,50)) {
++       clusterSetRNGStream(cl, seed)
++       out <- rbind(out,
++                    sim(n, tmax, M,
++                        ## regress response on proximal treatment, centered by a
++                        ## probability that is either (i) constant over time or
++                        ## (ii) time-varying
++                        y.formula = list(fixed = y ~ state + I(a - pfixed),
++                                         vary = y ~ state + I(a - pvary)),
++                        y.names = c(fixed = "Constant in $t$ (i)",
++                                    vary = "Depends on $S_t$ (ii)"),
++                        y.label = list(fixed = "I(a - pfixed)",
++                                       vary = "I(a - pvary)"),
++                        ## weight regression using the true treatment probability
++                        ## in the denominator
++                        y.args = list(fixed = list(wn = "pfixed", wd = "prob"),
++                                      vary = list(wn = "pvary", wd = "prob")),
++                        ## model numerator probability with (i) intercept only and
++                        ## (ii) state, which is time-varying
++                        a.formula = list(pfixed = a ~ 1,
++                                         pvary = a ~ state),
++                        a.names = c(pfixed = "Constant in $t$ (i)",
++                                    pvary = "Depends on $S_t$ (ii)"),
++                        ## use default generative model, but with medium level of
++                        ## moderation by state and an unmoderated delayed effect
++                        beta0 = c(-0.2, 0, 0, 0.5, 0),
++                        beta1 = c(-0.1, 0, 0, 0)
++                        ))
++     }
++   }
++   out
++ }
+> 
+> stable <- sim.stable()
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 4
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.5   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+     -0.1       0.0       0.0       0.0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x1812770>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x1812770>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x1812770>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x1812770>
+
+
+Analysis models
+
+  Constant in $t$ (i): y ~ state + I(a - pfixed)
+
+  Depends on $S_t$ (ii): y ~ state + I(a - pvary)
+
+Treatment probability models
+
+  Constant in $t$ (i): a ~ 1
+
+  Depends on $S_t$ (ii): a ~ state
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 4
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.5   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+     -0.1       0.0       0.0       0.0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x24b8f58>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x24b8f58>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x24b8f58>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x24b8f58>
+
+
+Analysis models
+
+  Constant in $t$ (i): y ~ state + I(a - pfixed)
+
+  Depends on $S_t$ (ii): y ~ state + I(a - pvary)
+
+Treatment probability models
+
+  Constant in $t$ (i): a ~ 1
+
+  Depends on $S_t$ (ii): a ~ state
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 4
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.5   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+     -0.1       0.0       0.0       0.0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2476408>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2476408>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2476408>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x2476408>
+
+
+Analysis models
+
+  Constant in $t$ (i): y ~ state + I(a - pfixed)
+
+  Depends on $S_t$ (ii): y ~ state + I(a - pvary)
+
+Treatment probability models
+
+  Constant in $t$ (i): a ~ 1
+
+  Depends on $S_t$ (ii): a ~ state
+
+
+Generative model attributes
+
+$origin
+[1] 1
+
+$lag
+[1] 4
+
+$sd
+[1] 1
+
+$coralpha
+[1] 0.7071068
+
+$corstr
+[1] "ar1"
+
+$beta0
+  one  tmod  base state lag1a 
+ -0.2   0.0   0.0   0.5   0.0 
+
+$beta1
+      one  lag1tmod      base lag1state 
+     -0.1       0.0       0.0       0.0 
+
+$eta
+  one  base state lag1a lag1y 
+  0.0   0.0   0.8  -0.8   0.0 
+
+$mu
+ one   ty base 
+   0    0    0 
+
+$theta0
+avail state 
+  0.0   0.8 
+
+$theta1
+lag1avail lag1state 
+        0         0 
+
+$coef.avail
+   one tavail  lag1a  lag1y 
+   100      0      0      0 
+
+$coef.state
+      one    tstate      base lag1state     lag1a 
+        0         0         0         0         0 
+
+$tfun
+$tfun$ty
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x249df50>
+
+$tfun$tmod
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x249df50>
+
+$tfun$tavail
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x249df50>
+
+$tfun$tstate
+function (tcur, tmax) 
+rep(0, length(tcur))
+<environment: 0x249df50>
+
+
+Analysis models
+
+  Constant in $t$ (i): y ~ state + I(a - pfixed)
+
+  Depends on $S_t$ (ii): y ~ state + I(a - pvary)
+
+Treatment probability models
+
+  Constant in $t$ (i): a ~ 1
+
+  Depends on $S_t$ (ii): a ~ state
+
+> save(stable, file = "sim-stable.RData")
+> 
+> stopCluster(cl)
+> 
+> proc.time()
+    user   system  elapsed 
+   3.394    0.308 3771.066 
