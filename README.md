@@ -20,8 +20,3 @@ File | Description
 [init.R](init.R) | Loads required packages, reads source files, defines miscellaneous utility functions
 [xgeepack.R](xgeepack.R) | Extensions for the geepack R package; extract, from a geepack model object, elements (e.g. working covariance, estimating function) needed for variance calculations
 [xzoo.R](xzoo.R) | Extensions for the zoo R package; apply lags, difference, rolling summaries to a sample of time series
-
-##### Application to BASICS-Mobile
-
-* [basics-mobile.R](basics-mobile.R) calls [basics-mobile-vars.R](basics-mobile-vars.R) to define variables, runs the data analysis
-* [basics-mobile.Rout](basics-mobile.Rout) output providing the results reported in the paper
