@@ -1,0 +1,270 @@
+
+R version 3.3.1 (2016-06-21) -- "Bug in Your Hair"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## demonstrate models for proximal and delayed treatment effects
+> 
+> ## load functions needed to generate some data
+> system("R CMD SHLIB rsnmm.c")
+make: Nothing to be done for `all'.
+> dyn.load(ifelse(Sys.info()["sysname"] == "Windows", "rsnmm.dll", "rsnmm.so"))
+> library("zoo")
+
+Attaching package: ‘zoo’
+
+The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+> source("xzoo.R")
+> source("rsnmm.R")
+> 
+> set.seed(0)
+> d <- rsnmm(n = 50, tmax = 200, beta1 = c(-0.1, 0, 0, 0),
++            coef.avail = c(log(9), 0, 0, 0))
+> 
+> ## define extra variables, using functions from xzoo.R:
+> ## - variation among current and up to the past 2 states
+> d$varstate <- with(d, roll(id, time, state, width = 3, FUN = var))
+> ## - variation up to the past 3 states
+> d$lag1varstate <- with(d, delay(id, time, varstate))
+> 
+> ## nb: for a given row in 'd'...
+> ##     'time' indexes the treatment occasion
+> ##     'a' is the corresponding treatment indicator
+> ##     'y' is the corresponding proximal response
+> ##     (this is the same format often used for longitudinal data)
+> head(d)
+  id time ty tmod tavail tstate      base state a          y        err avail
+1  1    0  0    0      0      0 0.6522909     0 0  0.0000000 -0.3975580     0
+2  1    1  0    0      0      0 0.6522909    -1 1 -1.6234748 -0.5474850     1
+3  1    2  0    0      0      0 0.6522909    -1 0  0.5373703  1.3391751     1
+4  1    3  0    0      0      0 0.6522909     1 0  1.2013483  0.3845501     1
+5  1    4  0    0      0      0 0.6522909    -1 0 -0.3738786  0.2331138     1
+6  1    5  0    0      0      0 0.6522909    -1 1 -0.7032743  0.3417129     1
+       prob   a.center state.center avail.center one      lag1y      lag2y
+1 0.0000000  0.0000000            0          0.0   1         NA         NA
+2 0.3100255  0.6899745           -1          0.1   1  0.0000000         NA
+3 0.1679816 -0.1679816           -1          0.1   1 -1.6234748  0.0000000
+4 0.6899745 -0.6899745            1          0.1   1  0.5373703 -1.6234748
+5 0.3100255 -0.3100255           -1          0.1   1  1.2013483  0.5373703
+6 0.3100255  0.6899745           -1          0.1   1 -0.3738786  1.2013483
+     lag1err lag1avail lag1avail.center lag2avail lag2avail.center lag1a lag2a
+1         NA        NA               NA        NA               NA    NA    NA
+2 -0.3975580         0              0.0        NA               NA     0    NA
+3 -0.5474850         1              0.1         0              0.0     1     0
+4  1.3391751         1              0.1         1              0.1     0     1
+5  0.3845501         1              0.1         1              0.1     0     0
+6  0.2331138         1              0.1         1              0.1     0     0
+   lag1prob  lag2prob lag1a.center lag2a.center lag1tmod lag2tmod lag1state
+1        NA        NA           NA           NA       NA       NA        NA
+2 0.0000000        NA    0.0000000           NA        0       NA         0
+3 0.3100255 0.0000000    0.6899745    0.0000000        0        0        -1
+4 0.1679816 0.3100255   -0.1679816    0.6899745        0        0        -1
+5 0.6899745 0.1679816   -0.6899745   -0.1679816        0        0         1
+6 0.3100255 0.6899745   -0.3100255   -0.6899745        0        0        -1
+  lag1state.center  varstate lag1varstate
+1               NA        NA           NA
+2                0 0.5000000           NA
+3               -1 0.3333333    0.5000000
+4               -1 1.3333333    0.3333333
+5                1 1.3333333    1.3333333
+6               -1 1.3333333    1.3333333
+> 
+> ## load functions needed for variance estimation
+> library("geepack")
+> source("xgeepack.R")
+> 
+> ## --- treatment model (for the weight denominator)
+> 
+> ## fit with 'geeglm'
+> ## nb: - weight by availability status so that the variance estimation functions
+> ##       can easily recover the estimating function
+> ##     - omit earlier observations from the data to avoid using initial values
+> ##       in the lagged treatment status ('lag1a')
+> ##     - 'geeglm' approach will be very slow for a large number of subjects and
+> ##       treatment occasions; in this case use 'glm'/'lm' as follows...
+> system.time(fitpd <- geeglm(a ~ lag1a * state, id = id, weights = avail,
++                             family = "binomial", data = d, subset = time > 3,
++                             scale.fix = TRUE))
+   user  system elapsed 
+  2.836   0.004   2.840 
+> summary(fitpd)
+
+Call:
+geeglm(formula = a ~ lag1a * state, family = "binomial", data = d, 
+    weights = avail, subset = time > 3, id = id, scale.fix = TRUE)
+
+ Coefficients:
+            Estimate  Std.err    Wald Pr(>|W|)    
+(Intercept)  0.05350  0.03103   2.972   0.0847 .  
+lag1a       -0.83606  0.04577 333.650   <2e-16 ***
+state        0.79397  0.02739 840.462   <2e-16 ***
+lag1a:state  0.03837  0.05133   0.559   0.4547    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Scale is fixed.
+
+Correlation: Structure = independenceNumber of clusters:   50   Maximum cluster size: 197 
+> 
+> ## fit with 'glm'
+> ## nb: in the 'data' argument, a data frame containing a subject identifer must
+> ##     be provided (although it need not be named 'id')
+> system.time(fitpd.glm <- glm(a ~ lag1a * state, weights = avail,
++                              family = "binomial", data = d, subset = time > 3))
+   user  system elapsed 
+  0.035   0.000   0.035 
+> 
+> ## make 'glm' output more like that of 'geeglm'
+> ## nb: this step is necessary for variance estimation later on
+> fitpd.glm <- glm2gee(fitpd.glm, id)
+> ## nb: consider only the coefficients, as this fit ignores repeated measures
+> fitpd.glm$coefficients
+(Intercept)       lag1a       state lag1a:state 
+    0.05350    -0.83606     0.79397     0.03837 
+> 
+> ## --- treatment probability model for weight numerator
+> 
+> ## fit with 'geeglm'
+> fitpn <- geeglm(a ~ 1, id = id, weights = avail, family = "binomial", data = d,
++                 scale.fix = TRUE)
+> summary(fitpn)
+
+Call:
+geeglm(formula = a ~ 1, family = "binomial", data = d, weights = avail, 
+    id = id, scale.fix = TRUE)
+
+ Coefficients:
+            Estimate Std.err Wald Pr(>|W|)    
+(Intercept)  -0.2191  0.0207  112   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Scale is fixed.
+
+Correlation: Structure = independenceNumber of clusters:   50   Maximum cluster size: 201 
+> 
+> ## fit with 'glm'
+> fitpn.glm <- glm(a ~ 1, weights = avail, family = "binomial", data = d)
+> fitpn.glm <- glm2gee(fitpn.glm, id)
+> fitpn.glm$coefficients
+(Intercept) 
+     -0.219 
+> 
+> ## --- calculate weights
+> 
+> ## nb: fitted values from 'geeglm' or 'glm' can be used interchangeably here
+> d$pd <- ifelse(d$avail == 0, 0, ifelse(d$time > 3, fitpd$fitted.values, NA))
+> d$pn <- ifelse(d$avail == 0, 0, ifelse(d$time > 3, fitpn$fitted.values, NA))
+> d$w <- with(d, ifelse(avail == 0, 0, ifelse(a == 1, pn/pd, (1 - pn)/(1 - pd))))
+> d$lag1pd <- with(d, delay(id, time, pd))
+> d$lag1pn <- with(d, delay(id, time, pn))
+> d$lag1w <- with(d, delay(id, time, w))
+> 
+> ## --- estimate the proximal treatment effect
+> 
+> ## fit with 'geeglm'
+> ## nb: - any moderators (like 'state') must be included in the regression model
+> ##       via the '*' or ':' *formula* operators
+> ##     - omit earlier observations from the data to avoid basing the state
+> ##       variance variable on initial values or too few values
+> ##     - any observations used to fit the treatment probability model(s), but not
+> ##       the proximal response model should correspond to *earlier* treatment
+> ##       occasions
+> fit1 <- geeglm(y ~ I(time%%2) + varstate + lag1a + I(a - pn) * state,
++                id = id, weights = w, data = d, subset = time > 4,
++                scale.fix = TRUE)
+> 
+> ## adjust variance estimates for estimation of treatment probabilities
+> ## nb: - depending on the 'pn' and 'pd' arguments specified, 'vcov' can handle
+> ##       any combination of centering and weighting
+> ##     - here the 'label' argument is the term label corresponding to the main
+> ##       treatment effect
+> fit1$vcov <- vcov(fit1, pn = fitpn, pd = fitpd, label = "I(a - pn)")
+> 
+> ## summarize the model fit
+> ## nb: 'estimate' can more generally consider linear combinations of regression
+> ##     coefficients, similar to the CONTRAST or ESTIMATE statements in SAS PROC
+> ##     GENMOD)
+> estimate(fit1)
+                Estimate  95% LCL  95% UCL       SE Hotelling p-value    
+(Intercept)      0.00257 -0.08036  0.08550  0.04127     0.004  0.9506    
+I(time%%2)       0.00160 -0.02692  0.03013  0.01419     0.013  0.9106    
+varstate         0.01115 -0.03504  0.05733  0.02298     0.235  0.6298    
+lag1a           -0.06708 -0.12409 -0.01006  0.02837     5.590  0.0221 *  
+I(a - pn)       -0.19663 -0.25663 -0.13664  0.02986    43.379  <1e-04 ***
+state            0.85483  0.82724  0.88243  0.01373  3876.334  <1e-04 ***
+I(a - pn):state  0.15691  0.10540  0.20843  0.02564    37.463  <1e-04 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+> ## fit with 'lm'
+> fit1.lm <- lm(y ~ I(time%%2) + state + varstate + lag1a + I(a - pn) * state,
++               weights = w, data = d, subset = time > 4)
+> fit1.lm <- glm2gee(fit1.lm, id)
+> fit1.lm$vcov <- vcov(fit1.lm, pn = fitpn.glm, pd = fitpd.glm,
++                      label = "I(a - pn)")
+> estimate(fit1.lm)
+                Estimate  95% LCL  95% UCL       SE Hotelling p-value    
+(Intercept)      0.00257 -0.08036  0.08550  0.04127     0.004  0.9506    
+I(time%%2)       0.00160 -0.02692  0.03013  0.01419     0.013  0.9106    
+state            0.85483  0.82724  0.88243  0.01373  3876.334  <1e-04 ***
+varstate         0.01115 -0.03504  0.05733  0.02298     0.235  0.6298    
+lag1a           -0.06708 -0.12409 -0.01006  0.02837     5.590  0.0221 *  
+I(a - pn)       -0.19663 -0.25663 -0.13664  0.02986    43.379  <1e-04 ***
+state:I(a - pn)  0.15691  0.10540  0.20843  0.02564    37.463  <1e-04 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+> ## --- estimate the delayed treatment effect
+> 
+> ## fit with 'geeglm'
+> fit2 <- geeglm(y ~ I(time%%2) + lag1state + lag1varstate + I(lag1a - lag1pn),
++                weights = lag1w, id = id, data = d, subset = time > 5,
++                scale.fix = TRUE)
+> fit2$vcov <- vcov(fit2, pn = fitpn, pd = fitpd, label = "I(lag1a - lag1pn)")
+> estimate(fit2)
+                  Estimate  95% LCL  95% UCL       SE Hotelling p-value  
+(Intercept)       -0.00558 -0.09597  0.08481  0.04498     0.015   0.902  
+I(time%%2)        -0.00487 -0.05166  0.04192  0.02328     0.044   0.835  
+lag1state          0.02520 -0.00995  0.06035  0.01749     2.075   0.156  
+lag1varstate       0.04342 -0.01527  0.10211  0.02921     2.210   0.144  
+I(lag1a - lag1pn) -0.08630 -0.16340 -0.00919  0.03837     5.058   0.029 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+> ## fit with 'lm'
+> fit2.lm <- lm(y ~ I(time%%2) + lag1state + lag1varstate + I(lag1a - lag1pn),
++               weights = lag1w, data = d, subset = time > 5)
+> fit2.lm <- glm2gee(fit2.lm, id)
+> fit2.lm$vcov <- vcov(fit2.lm, pn = fitpn, pd = fitpd,
++                      label = "I(lag1a - lag1pn)")
+> estimate(fit2.lm)
+                  Estimate  95% LCL  95% UCL       SE Hotelling p-value  
+(Intercept)       -0.00558 -0.09597  0.08481  0.04498     0.015   0.902  
+I(time%%2)        -0.00487 -0.05166  0.04192  0.02328     0.044   0.835  
+lag1state          0.02520 -0.00995  0.06035  0.01749     2.075   0.156  
+lag1varstate       0.04342 -0.01527  0.10211  0.02921     2.210   0.144  
+I(lag1a - lag1pn) -0.08630 -0.16340 -0.00919  0.03837     5.058   0.029 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+> proc.time()
+   user  system elapsed 
+ 19.578   0.152  19.821 

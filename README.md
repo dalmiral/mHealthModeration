@@ -20,3 +20,10 @@ File | Description
 [init.R](init.R) | Loads required packages, reads source files, defines miscellaneous utility functions
 [xgeepack.R](xgeepack.R) | Extensions for the geepack R package; extract, from a geepack model object, elements (e.g. working covariance, estimating function) needed for variance calculations
 [xzoo.R](xzoo.R) | Extensions for the zoo R package; apply lags, difference, rolling summaries to a sample of time series
+
+##### Application to simulated data
+
+Instead of the application presented in the paper (which considers sensitive data), we provide an example using simulated data.
+
+* [example.R](example.R) generates data and runs an analysis similar to the application presented in the paper
+* [example.Rout](example.Rout) output providing the results
