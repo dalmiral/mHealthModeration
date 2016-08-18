@@ -87,7 +87,8 @@ glm2gee <- function(x, id) {
       ids <- substitute(id)
       x$id <- if (exists(deparse(ids), envir = parent.frame())) id
               else eval(ids, eval(x$call$data))
-      if (!is.null(x$call$subset)) x$id <- x$id[eval(x$call$subset)]
+      if (!is.null(x$call$subset))
+        x$id <- x$id[eval(x$call$subset, eval(x$call$data))]
     }
     else x$id <- id
   }
@@ -253,6 +254,7 @@ meat.geeglm <- function(x, pn = NULL, pd = pn, lag = 0, wcovinv = NULL,
     ## augment meat for estimated centering probabilities
     if (center) {
       if (is.null(label)) stop("Specify non-NULL treatment term label.")
+      label <- attributes(terms(as.formula(paste("y ~", label))))$term.labels
       pn <- gee.scalars(pn)
       ## indices of design matrix related to treatment effects
       k <- which.terms(x, label)
