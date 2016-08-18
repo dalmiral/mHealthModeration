@@ -22,7 +22,7 @@ Type 'q()' to quit R.
 > ## load functions needed to generate some data
 > system("R CMD SHLIB rsnmm.c")
 make: Nothing to be done for `all'.
-> dyn.load(ifelse(Sys.info()["sysname"] == "Windows", "rsnmm.dll", "rsnmm.so"))
+> dyn.load(if (Sys.info()["sysname"] == "Windows") "rsnmm.dll" else "rsnmm.so")
 > library("zoo")
 
 Attaching package: ‘zoo’
@@ -49,42 +49,43 @@ The following objects are masked from ‘package:base’:
 > ##     'a' is the corresponding treatment indicator
 > ##     'y' is the corresponding proximal response
 > ##     (this is the same format often used for longitudinal data)
+> d <- subset(d, time > 0)
 > head(d)
   id time ty tmod tavail tstate      base state a          y        err avail
-1  1    0  0    0      0      0 0.6522909     0 0  0.0000000 -0.3975580     0
 2  1    1  0    0      0      0 0.6522909    -1 1 -1.6234748 -0.5474850     1
 3  1    2  0    0      0      0 0.6522909    -1 0  0.5373703  1.3391751     1
 4  1    3  0    0      0      0 0.6522909     1 0  1.2013483  0.3845501     1
 5  1    4  0    0      0      0 0.6522909    -1 0 -0.3738786  0.2331138     1
 6  1    5  0    0      0      0 0.6522909    -1 1 -0.7032743  0.3417129     1
+7  1    6  0    0      0      0 0.6522909     1 0  1.4097941  0.6787916     1
        prob   a.center state.center avail.center one      lag1y      lag2y
-1 0.0000000  0.0000000            0          0.0   1         NA         NA
 2 0.3100255  0.6899745           -1          0.1   1  0.0000000         NA
 3 0.1679816 -0.1679816           -1          0.1   1 -1.6234748  0.0000000
 4 0.6899745 -0.6899745            1          0.1   1  0.5373703 -1.6234748
 5 0.3100255 -0.3100255           -1          0.1   1  1.2013483  0.5373703
 6 0.3100255  0.6899745           -1          0.1   1 -0.3738786  1.2013483
+7 0.5000000 -0.5000000            1          0.1   1 -0.7032743 -0.3738786
      lag1err lag1avail lag1avail.center lag2avail lag2avail.center lag1a lag2a
-1         NA        NA               NA        NA               NA    NA    NA
 2 -0.3975580         0              0.0        NA               NA     0    NA
 3 -0.5474850         1              0.1         0              0.0     1     0
 4  1.3391751         1              0.1         1              0.1     0     1
 5  0.3845501         1              0.1         1              0.1     0     0
 6  0.2331138         1              0.1         1              0.1     0     0
+7  0.3417129         1              0.1         1              0.1     1     0
    lag1prob  lag2prob lag1a.center lag2a.center lag1tmod lag2tmod lag1state
-1        NA        NA           NA           NA       NA       NA        NA
 2 0.0000000        NA    0.0000000           NA        0       NA         0
 3 0.3100255 0.0000000    0.6899745    0.0000000        0        0        -1
 4 0.1679816 0.3100255   -0.1679816    0.6899745        0        0        -1
 5 0.6899745 0.1679816   -0.6899745   -0.1679816        0        0         1
 6 0.3100255 0.6899745   -0.3100255   -0.6899745        0        0        -1
+7 0.3100255 0.3100255    0.6899745   -0.3100255        0        0        -1
   lag1state.center  varstate lag1varstate
-1               NA        NA           NA
 2                0 0.5000000           NA
 3               -1 0.3333333    0.5000000
 4               -1 1.3333333    0.3333333
 5                1 1.3333333    1.3333333
 6               -1 1.3333333    1.3333333
+7               -1 1.3333333    1.3333333
 > 
 > ## load functions needed for variance estimation
 > library("geepack")
@@ -103,7 +104,7 @@ The following objects are masked from ‘package:base’:
 +                             family = "binomial", data = d, subset = time > 3,
 +                             scale.fix = TRUE))
    user  system elapsed 
-  2.836   0.004   2.840 
+  2.832   0.000   2.833 
 > summary(fitpd)
 
 Call:
@@ -143,25 +144,26 @@ Correlation: Structure = independenceNumber of clusters:   50   Maximum cluster 
 > 
 > ## fit with 'geeglm'
 > fitpn <- geeglm(a ~ 1, id = id, weights = avail, family = "binomial", data = d,
-+                 scale.fix = TRUE)
++                 subset = time > 2, scale.fix = TRUE)
 > summary(fitpn)
 
 Call:
 geeglm(formula = a ~ 1, family = "binomial", data = d, weights = avail, 
-    id = id, scale.fix = TRUE)
+    subset = time > 2, id = id, scale.fix = TRUE)
 
  Coefficients:
             Estimate Std.err Wald Pr(>|W|)    
-(Intercept)  -0.2191  0.0207  112   <2e-16 ***
+(Intercept)  -0.2191  0.0206  113   <2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Scale is fixed.
 
-Correlation: Structure = independenceNumber of clusters:   50   Maximum cluster size: 201 
+Correlation: Structure = independenceNumber of clusters:   50   Maximum cluster size: 198 
 > 
 > ## fit with 'glm'
-> fitpn.glm <- glm(a ~ 1, weights = avail, family = "binomial", data = d)
+> fitpn.glm <- glm(a ~ 1, weights = avail, family = "binomial", data = d,
++                  subset = time > 2)
 > fitpn.glm <- glm2gee(fitpn.glm, id)
 > fitpn.glm$coefficients
 (Intercept) 
@@ -187,7 +189,7 @@ Correlation: Structure = independenceNumber of clusters:   50   Maximum cluster 
 > ##     - any observations used to fit the treatment probability model(s), but not
 > ##       the proximal response model should correspond to *earlier* treatment
 > ##       occasions
-> fit1 <- geeglm(y ~ I(time%%2) + varstate + lag1a + I(a - pn) * state,
+> fit1 <- geeglm(y ~ I(time%%2) + varstate + lag1a + state * I(a - pn),
 +                id = id, weights = w, data = d, subset = time > 4,
 +                scale.fix = TRUE)
 > 
@@ -204,31 +206,31 @@ Correlation: Structure = independenceNumber of clusters:   50   Maximum cluster 
 > ##     GENMOD)
 > estimate(fit1)
                 Estimate  95% LCL  95% UCL       SE Hotelling p-value    
-(Intercept)      0.00257 -0.08036  0.08550  0.04127     0.004  0.9506    
-I(time%%2)       0.00160 -0.02692  0.03013  0.01419     0.013  0.9106    
-varstate         0.01115 -0.03504  0.05733  0.02298     0.235  0.6298    
-lag1a           -0.06708 -0.12409 -0.01006  0.02837     5.590  0.0221 *  
-I(a - pn)       -0.19663 -0.25663 -0.13664  0.02986    43.379  <1e-04 ***
-state            0.85483  0.82724  0.88243  0.01373  3876.334  <1e-04 ***
-I(a - pn):state  0.15691  0.10540  0.20843  0.02564    37.463  <1e-04 ***
+(Intercept)      0.01902 -0.06071  0.09874  0.03967     0.230  0.6339    
+I(time%%2)      -0.00428 -0.03630  0.02774  0.01593     0.072  0.7895    
+varstate        -0.00150 -0.05271  0.04971  0.02548     0.003  0.9532    
+lag1a           -0.07292 -0.12980 -0.01604  0.02830     6.637  0.0131 *  
+state            0.84830  0.81918  0.87741  0.01449  3429.156  <1e-04 ***
+I(a - pn)       -0.18956 -0.24775 -0.13137  0.02896    42.852  <1e-04 ***
+state:I(a - pn)  0.16080  0.10313  0.21846  0.02869    31.403  <1e-04 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 > 
 > ## fit with 'lm'
-> fit1.lm <- lm(y ~ I(time%%2) + state + varstate + lag1a + I(a - pn) * state,
+> fit1.lm <- lm(y ~ I(time%%2) + varstate + lag1a + state * I(a - pn),
 +               weights = w, data = d, subset = time > 4)
 > fit1.lm <- glm2gee(fit1.lm, id)
 > fit1.lm$vcov <- vcov(fit1.lm, pn = fitpn.glm, pd = fitpd.glm,
 +                      label = "I(a - pn)")
 > estimate(fit1.lm)
                 Estimate  95% LCL  95% UCL       SE Hotelling p-value    
-(Intercept)      0.00257 -0.08036  0.08550  0.04127     0.004  0.9506    
-I(time%%2)       0.00160 -0.02692  0.03013  0.01419     0.013  0.9106    
-state            0.85483  0.82724  0.88243  0.01373  3876.334  <1e-04 ***
-varstate         0.01115 -0.03504  0.05733  0.02298     0.235  0.6298    
-lag1a           -0.06708 -0.12409 -0.01006  0.02837     5.590  0.0221 *  
-I(a - pn)       -0.19663 -0.25663 -0.13664  0.02986    43.379  <1e-04 ***
-state:I(a - pn)  0.15691  0.10540  0.20843  0.02564    37.463  <1e-04 ***
+(Intercept)      0.01902 -0.06071  0.09874  0.03967     0.230  0.6339    
+I(time%%2)      -0.00428 -0.03630  0.02774  0.01593     0.072  0.7895    
+varstate        -0.00150 -0.05271  0.04971  0.02548     0.003  0.9532    
+lag1a           -0.07292 -0.12980 -0.01604  0.02830     6.637  0.0131 *  
+state            0.84830  0.81918  0.87741  0.01449  3429.156  <1e-04 ***
+I(a - pn)       -0.18956 -0.24775 -0.13137  0.02896    42.852  <1e-04 ***
+state:I(a - pn)  0.16080  0.10313  0.21846  0.02869    31.403  <1e-04 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 > 
@@ -241,11 +243,11 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 > fit2$vcov <- vcov(fit2, pn = fitpn, pd = fitpd, label = "I(lag1a - lag1pn)")
 > estimate(fit2)
                   Estimate  95% LCL  95% UCL       SE Hotelling p-value  
-(Intercept)       -0.00558 -0.09597  0.08481  0.04498     0.015   0.902  
-I(time%%2)        -0.00487 -0.05166  0.04192  0.02328     0.044   0.835  
-lag1state          0.02520 -0.00995  0.06035  0.01749     2.075   0.156  
-lag1varstate       0.04342 -0.01527  0.10211  0.02921     2.210   0.144  
-I(lag1a - lag1pn) -0.08630 -0.16340 -0.00919  0.03837     5.058   0.029 *
+(Intercept)        0.01632 -0.07070  0.10334  0.04330     0.142  0.7079  
+I(time%%2)        -0.02367 -0.07521  0.02787  0.02565     0.852  0.3605  
+lag1state          0.03797 -0.00107  0.07701  0.01943     3.820  0.0564 .
+lag1varstate       0.01870 -0.03366  0.07107  0.02606     0.515  0.4763  
+I(lag1a - lag1pn) -0.09531 -0.17309 -0.01752  0.03871     6.063  0.0174 *
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 > 
@@ -257,14 +259,14 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 +                      label = "I(lag1a - lag1pn)")
 > estimate(fit2.lm)
                   Estimate  95% LCL  95% UCL       SE Hotelling p-value  
-(Intercept)       -0.00558 -0.09597  0.08481  0.04498     0.015   0.902  
-I(time%%2)        -0.00487 -0.05166  0.04192  0.02328     0.044   0.835  
-lag1state          0.02520 -0.00995  0.06035  0.01749     2.075   0.156  
-lag1varstate       0.04342 -0.01527  0.10211  0.02921     2.210   0.144  
-I(lag1a - lag1pn) -0.08630 -0.16340 -0.00919  0.03837     5.058   0.029 *
+(Intercept)        0.01632 -0.07070  0.10334  0.04330     0.142  0.7079  
+I(time%%2)        -0.02367 -0.07521  0.02787  0.02565     0.852  0.3605  
+lag1state          0.03797 -0.00107  0.07701  0.01943     3.820  0.0564 .
+lag1varstate       0.01870 -0.03366  0.07107  0.02606     0.515  0.4763  
+I(lag1a - lag1pn) -0.09531 -0.17309 -0.01752  0.03871     6.063  0.0174 *
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 > 
 > proc.time()
    user  system elapsed 
- 19.578   0.152  19.821 
+ 18.630   0.184  18.893 

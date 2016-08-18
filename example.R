@@ -2,7 +2,7 @@
 
 ## load functions needed to generate some data
 system("R CMD SHLIB rsnmm.c")
-dyn.load(ifelse(Sys.info()["sysname"] == "Windows", "rsnmm.dll", "rsnmm.so"))
+dyn.load(if (Sys.info()["sysname"] == "Windows") "rsnmm.dll" else "rsnmm.so")
 library("zoo")
 source("xzoo.R")
 source("rsnmm.R")
@@ -22,6 +22,7 @@ d$lag1varstate <- with(d, delay(id, time, varstate))
 ##     'a' is the corresponding treatment indicator
 ##     'y' is the corresponding proximal response
 ##     (this is the same format often used for longitudinal data)
+d <- subset(d, time > 0)
 head(d)
 
 ## load functions needed for variance estimation
@@ -58,11 +59,12 @@ fitpd.glm$coefficients
 
 ## fit with 'geeglm'
 fitpn <- geeglm(a ~ 1, id = id, weights = avail, family = "binomial", data = d,
-                scale.fix = TRUE)
+                subset = time > 2, scale.fix = TRUE)
 summary(fitpn)
 
 ## fit with 'glm'
-fitpn.glm <- glm(a ~ 1, weights = avail, family = "binomial", data = d)
+fitpn.glm <- glm(a ~ 1, weights = avail, family = "binomial", data = d,
+                 subset = time > 2)
 fitpn.glm <- glm2gee(fitpn.glm, id)
 fitpn.glm$coefficients
 
@@ -86,7 +88,7 @@ d$lag1w <- with(d, delay(id, time, w))
 ##     - any observations used to fit the treatment probability model(s), but not
 ##       the proximal response model should correspond to *earlier* treatment
 ##       occasions
-fit1 <- geeglm(y ~ I(time%%2) + varstate + lag1a + I(a - pn) * state,
+fit1 <- geeglm(y ~ I(time%%2) + varstate + lag1a + state * I(a - pn),
                id = id, weights = w, data = d, subset = time > 4,
                scale.fix = TRUE)
 
@@ -104,7 +106,7 @@ fit1$vcov <- vcov(fit1, pn = fitpn, pd = fitpd, label = "I(a - pn)")
 estimate(fit1)
 
 ## fit with 'lm'
-fit1.lm <- lm(y ~ I(time%%2) + state + varstate + lag1a + I(a - pn) * state,
+fit1.lm <- lm(y ~ I(time%%2) + varstate + lag1a + state * I(a - pn),
               weights = w, data = d, subset = time > 4)
 fit1.lm <- glm2gee(fit1.lm, id)
 fit1.lm$vcov <- vcov(fit1.lm, pn = fitpn.glm, pd = fitpd.glm,
