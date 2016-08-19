@@ -104,7 +104,7 @@ The following objects are masked from ‘package:base’:
 +                             family = "binomial", data = d, subset = time > 3,
 +                             scale.fix = TRUE))
    user  system elapsed 
-  2.832   0.000   2.833 
+  2.825   0.004   2.829 
 > summary(fitpd)
 
 Call:
@@ -215,6 +215,16 @@ I(a - pn)       -0.18956 -0.24775 -0.13137  0.02896    42.852  <1e-04 ***
 state:I(a - pn)  0.16080  0.10313  0.21846  0.02869    31.403  <1e-04 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> estimate(fit1, rbind("Proximal effect in state -1" = c(rep(0, 5), 1, -1),
++                      "Proximal in state 1" = c(rep(0, 5), 1, 1)))
+                            Estimate 95% LCL 95% UCL      SE Hotelling p-value
+Proximal effect in state -1  -0.3504 -0.4090 -0.2917  0.0469    55.791  <1e-04
+Proximal in state 1          -0.0288 -0.0706  0.0131  0.0335     0.736   0.233
+                               
+Proximal effect in state -1 ***
+Proximal in state 1            
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 > 
 > ## fit with 'lm'
 > fit1.lm <- lm(y ~ I(time%%2) + varstate + lag1a + state * I(a - pn),
@@ -231,6 +241,16 @@ lag1a           -0.07292 -0.12980 -0.01604  0.02830     6.637  0.0131 *
 state            0.84830  0.81918  0.87741  0.01449  3429.156  <1e-04 ***
 I(a - pn)       -0.18956 -0.24775 -0.13137  0.02896    42.852  <1e-04 ***
 state:I(a - pn)  0.16080  0.10313  0.21846  0.02869    31.403  <1e-04 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> estimate(fit1, rbind("Proximal effect in state -1" = c(rep(0, 5), 1, -1),
++                      "Proximal in state 1" = c(rep(0, 5), 1, 1)))
+                            Estimate 95% LCL 95% UCL      SE Hotelling p-value
+Proximal effect in state -1  -0.3504 -0.4090 -0.2917  0.0469    55.791  <1e-04
+Proximal in state 1          -0.0288 -0.0706  0.0131  0.0335     0.736   0.233
+                               
+Proximal effect in state -1 ***
+Proximal in state 1            
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 > 
@@ -269,4 +289,4 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 > 
 > proc.time()
    user  system elapsed 
- 18.630   0.184  18.893 
+  18.71    0.11   18.91 

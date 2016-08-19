@@ -104,6 +104,8 @@ fit1$vcov <- vcov(fit1, pn = fitpn, pd = fitpd, label = "I(a - pn)")
 ##     coefficients, similar to the CONTRAST or ESTIMATE statements in SAS PROC
 ##     GENMOD)
 estimate(fit1)
+estimate(fit1, rbind("Proximal effect in state -1" = c(rep(0, 5), 1, -1),
+                     "Proximal in state 1" = c(rep(0, 5), 1, 1)))
 
 ## fit with 'lm'
 fit1.lm <- lm(y ~ I(time%%2) + varstate + lag1a + state * I(a - pn),
@@ -112,6 +114,8 @@ fit1.lm <- glm2gee(fit1.lm, id)
 fit1.lm$vcov <- vcov(fit1.lm, pn = fitpn.glm, pd = fitpd.glm,
                      label = "I(a - pn)")
 estimate(fit1.lm)
+estimate(fit1, rbind("Proximal effect in state -1" = c(rep(0, 5), 1, -1),
+                     "Proximal in state 1" = c(rep(0, 5), 1, 1)))
 
 ## --- estimate the delayed treatment effect
 
