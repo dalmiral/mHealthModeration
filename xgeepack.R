@@ -396,7 +396,7 @@ estimate <- function(x, combos = NULL, omnibus = FALSE, null = 0,
   n <- cluster.number(x, overall = FALSE)
   d1 <- if (omnibus) nrow(combos)
         else apply(combos != 0, 1, sum)
-  d2 <- n - length(coef)
+  d2 <- n - length(coef(x))
   ## apply Hotelling's T-squared test, following Liao et al. (2016)
   if (n <= small & !normal) {
     type <- "Hotelling"
