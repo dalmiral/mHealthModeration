@@ -102,7 +102,7 @@ fit1$vcov <- vcov(fit1, pn = fitpn, pd = fitpd, label = "I(a - pn)")
 ## summarize the model fit
 ## nb: 'estimate' can more generally consider linear combinations of regression
 ##     coefficients, similar to the CONTRAST or ESTIMATE statements in SAS PROC
-##     GENMOD)
+##     GENMOD
 estimate(fit1)
 estimate(fit1, rbind("Proximal effect in state -1" = c(rep(0, 5), 1, -1),
                      "Proximal in state 1" = c(rep(0, 5), 1, 1)))

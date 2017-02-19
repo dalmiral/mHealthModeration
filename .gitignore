@@ -1,0 +1,8 @@
+TAGS
+*~
+*.o
+*.so
+*.dll
+*.fuse*
+*.bak
+.Rhistory
