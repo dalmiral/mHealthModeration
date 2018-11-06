@@ -27,9 +27,11 @@ File | Description
 
 ##### Application to simulated data
 
-Instead of the application presented in the paper (which considers sensitive data), we provide an example using simulated data.
+Instead of the application presented in the paper (which considers sensitive data), we provide an example using simulated data---both with and without use of the geepack R package. The zoo R package is used to easily define variables, but is not needed for estimation.
 
 File | Description
 ---- | ----
-[example.R](example.R) | Loads geepack and zoo extensions, generates data and runs an analysis similar to the application presented in the paper
+[example_geepack.R](example.R) | Loads geepack and zoo extensions, generates data and runs an analysis similar to the application presented in the paper
+[example_geepack.Rout](example.Rout) | Provides the output obtained by running the example in batch mode
+[example.R](example.R) | Loads zoo extensions, generates data and runs an analysis similar to the application presented in the paper
 [example.Rout](example.Rout) | Provides the output obtained by running the example in batch mode

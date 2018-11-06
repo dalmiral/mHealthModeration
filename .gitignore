@@ -6,3 +6,5 @@ TAGS
 *.fuse*
 *.bak
 .Rhistory
+.Rproj.user
+*.Rproj
