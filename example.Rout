@@ -1,7 +1,7 @@
 
-R version 3.3.2 (2016-10-31) -- "Sincere Pumpkin Patch"
-Copyright (C) 2016 The R Foundation for Statistical Computing
-Platform: x86_64-pc-linux-gnu (64-bit)
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -17,8 +17,8 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
-> ## demonstrate models for proximal and delayed treatment effects,
-> ## without use of any geepack functions
+> ## demonstrate models for proximal and delayed treatment effects using model
+> ## fitting functions from the standard 'stats' R package ('glm' and 'lm')
 > 
 > ## load functions needed to generate some data
 > system("R CMD SHLIB rsnmm.c")
@@ -96,9 +96,9 @@ The following objects are masked from ‘package:base’:
 > ## nb: in the 'data' argument, a data frame containing a subject identifer must
 > ##     be provided (although it need not be named 'id')
 > system.time(fitpd <- glm(a ~ lag1a * state, weights = avail,
-+                              family = "binomial", data = d, subset = time > 3))
++                          family = "binomial", data = d, subset = time > 3))
    user  system elapsed 
-  0.060   0.004   0.063 
+  0.031   0.008   0.038 
 > 
 > ## make 'glm' output more like that of 'geeglm'
 > ## nb: this step is necessary for variance estimation later on
@@ -111,7 +111,7 @@ The following objects are masked from ‘package:base’:
 > ## --- treatment probability model for weight numerator
 > 
 > fitpn <- glm(a ~ 1, weights = avail, family = "binomial", data = d,
-+                  subset = time > 2)
++              subset = time > 2)
 > fitpn <- glm2gee(fitpn, id)
 > fitpn$coefficients
 (Intercept) 
@@ -119,8 +119,10 @@ The following objects are masked from ‘package:base’:
 > 
 > ## --- calculate weights
 > 
-> d$pd <- ifelse(d$avail == 0, 0, ifelse(d$time > 3, fitpd$fitted.values, NA))
-> d$pn <- ifelse(d$avail == 0, 0, ifelse(d$time > 3, fitpn$fitted.values, NA))
+> d$pd <- d$pn <- NA
+> d[names(fitpd$fitted.values), "pd"] <- fitpd$fitted.values
+> d[names(fitpn$fitted.values), "pn"] <- fitpn$fitted.values
+> d[d$avail == 0, c("pd", "pn")] <- 0
 > d$w <- with(d, ifelse(avail == 0, 0, ifelse(a == 1, pn/pd, (1 - pn)/(1 - pd))))
 > d$lag1pd <- with(d, delay(id, time, pd))
 > d$lag1pn <- with(d, delay(id, time, pn))
@@ -129,7 +131,7 @@ The following objects are masked from ‘package:base’:
 > ## --- estimate the proximal treatment effect
 > 
 > fit1 <- lm(y ~ I(time%%2) + varstate + lag1a + state * I(a - pn),
-+               weights = w, data = d, subset = time > 4)
++            weights = w, data = d, subset = time > 4)
 > fit1 <- glm2gee(fit1, id)
 > 
 > ## adjust variance estimates for estimation of treatment probabilities
@@ -137,29 +139,28 @@ The following objects are masked from ‘package:base’:
 > ##       any combination of centering and weighting
 > ##     - here the 'label' argument is the term label corresponding to the main
 > ##       treatment effect
-> fit1$vcov <- vcov(fit1, pn = fitpn, pd = fitpd,
-+                      label = "I(a - pn)")
+> fit1$vcov <- vcov(fit1, pn = fitpn, pd = fitpd, label = "I(a - pn)")
 > 
 > ## summarize the model fit
 > ## nb: 'estimate' can more generally consider linear combinations of regression
 > ##     coefficients, similar to the CONTRAST or ESTIMATE statements in SAS PROC
 > ##     GENMOD
 > estimate(fit1)
-                Estimate  95% LCL  95% UCL       SE Hotelling p-value    
-(Intercept)      0.01902 -0.06071  0.09874  0.03967     0.230  0.6339    
-I(time%%2)      -0.00428 -0.03630  0.02774  0.01593     0.072  0.7895    
-varstate        -0.00150 -0.05271  0.04971  0.02548     0.003  0.9532    
-lag1a           -0.07292 -0.12980 -0.01604  0.02830     6.637  0.0131 *  
-state            0.84830  0.81918  0.87741  0.01449  3429.156  <1e-04 ***
-I(a - pn)       -0.18956 -0.24775 -0.13137  0.02896    42.852  <1e-04 ***
-state:I(a - pn)  0.16080  0.10313  0.21846  0.02869    31.403  <1e-04 ***
+                 Estimate   95% LCL   95% UCL        SE Hotelling p-value    
+(Intercept)      0.000351 -0.080117  0.080820  0.039901     0.000 0.99301    
+I(time%%2)       0.033185  0.008242  0.058128  0.012368     7.199 0.01031 *  
+varstate        -0.000929 -0.050823  0.048965  0.024741     0.001 0.97022    
+lag1a           -0.086419 -0.149928 -0.022911  0.031492     7.531 0.00881 ** 
+state            0.858799  0.832337  0.885260  0.013121  4283.958 < 1e-04 ***
+I(a - pn)       -0.198920 -0.256687 -0.141152  0.028645    48.224 < 1e-04 ***
+state:I(a - pn)  0.188144  0.135870  0.240419  0.025921    52.685 < 1e-04 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 > estimate(fit1, rbind("Proximal effect in state -1" = c(rep(0, 5), 1, -1),
 +                      "Proximal in state 1" = c(rep(0, 5), 1, 1)))
                             Estimate 95% LCL 95% UCL      SE Hotelling p-value
-Proximal effect in state -1  -0.3504 -0.4090 -0.2917  0.0469    55.791  <1e-04
-Proximal in state 1          -0.0288 -0.0706  0.0131  0.0335     0.736   0.233
+Proximal effect in state -1  -0.3871 -0.4412 -0.3329  0.0432    80.198  <1e-04
+Proximal in state 1          -0.0108 -0.0527  0.0311  0.0334     0.104   0.809
                                
 Proximal effect in state -1 ***
 Proximal in state 1            
@@ -168,22 +169,21 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 > 
 > ## --- estimate the delayed treatment effect
 > 
-> ## fit with 'lm'
 > fit2 <- lm(y ~ I(time%%2) + lag1state + lag1varstate + I(lag1a - lag1pn),
-+               weights = lag1w, data = d, subset = time > 5)
++            weights = lag1w, data = d, subset = time > 5)
 > fit2 <- glm2gee(fit2, id)
 > fit2$vcov <- vcov(fit2, pn = fitpn, pd = fitpd,
-+                      label = "I(lag1a - lag1pn)")
++                   label = "I(lag1a - lag1pn)")
 > estimate(fit2)
-                  Estimate  95% LCL  95% UCL       SE Hotelling p-value  
-(Intercept)        0.01632 -0.07070  0.10334  0.04330     0.142  0.7079  
-I(time%%2)        -0.02367 -0.07521  0.02787  0.02565     0.852  0.3605  
-lag1state          0.03797 -0.00107  0.07701  0.01943     3.820  0.0564 .
-lag1varstate       0.01870 -0.03366  0.07107  0.02606     0.515  0.4763  
-I(lag1a - lag1pn) -0.09531 -0.17309 -0.01752  0.03871     6.063  0.0174 *
+                   Estimate   95% LCL   95% UCL        SE Hotelling p-value  
+(Intercept)        0.022410 -0.078882  0.123702  0.050291     0.199  0.6580  
+I(time%%2)        -0.018921 -0.066729  0.028887  0.023736     0.635  0.4296  
+lag1state          0.038101  0.003842  0.072361  0.017010     5.017  0.0301 *
+lag1varstate       0.021931 -0.038860  0.082722  0.030183     0.528  0.4712  
+I(lag1a - lag1pn) -0.075436 -0.151452  0.000579  0.037742     3.995  0.0517 .
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 > 
 > proc.time()
    user  system elapsed 
-  5.601   0.137   5.786 
+ 14.193   1.210  20.531 
