@@ -12,7 +12,7 @@ rsnmm(int *size, int *tmax,
       int *avail, double *base, int *state, int *a, double *prob,
       double *y, double *err, double *statec, double *ac, double *availc)
 {
-  int i, j, k, n = *size, T = *tmax;
+  int i, j, n = *size, T = *tmax;
   double r, q, ym;
   GetRNGstate();
   for (i = 0; i < n; i++) {
@@ -44,7 +44,7 @@ rsnmm(int *size, int *tmax,
       a[i*T + j] = (int) rbinom(1, prob[i*T + j]);
       ac[i*T + j] = a[i*T + j] - prob[i*T + j];
       /* conditional mean response */
-      ym = mu[0]          
+      ym = mu[0]
         + mu[1] * ty[j]  /* pre-evaluated time function */
         + mu[2] * base[i*T + j]
         + ac[i*T + j] * (beta[0]
